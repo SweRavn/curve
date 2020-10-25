@@ -1,10 +1,10 @@
 # A package to generate parametric curves
 
 ## Repository structure
-curves - the curves package
-examples - examples
-doc - documentation
-tests - tests
+  curves - the curves package
+  examples - examples
+  doc - documentation
+  tests - tests
 
 ## Development
 Create a virtual environment
