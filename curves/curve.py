@@ -8,6 +8,7 @@ A module for generating parametric curves.
 """
 
 from numpy import array, concatenate, linspace, sqrt, ndarray, sum
+from matplotlib.pyplot import gca
 from .point import Point
 
 def plot_curves(ax):
@@ -101,7 +102,7 @@ class Curve(metaclass=MetaCurve):
     
     def s(self, s=None):
         """
-        @param s: Either an array-like object of paramer values, None to let the curve generate the parameters from default or a slice to slice the default list.
+        @param s Either an array-like object of parameter values, None to let the curve generate the parameters from default or a slice to slice the default list.
         """
         if s is None:
             if self.closed:
@@ -286,13 +287,15 @@ class Curve(metaclass=MetaCurve):
         data = self.stroke(s, w)
         ax.plot(data[0,:], data[1,:])
 
-    def plot(self, ax, s=None):
+    def plot(self, ax=None, s=None):
         """
         Plot self on ax.
         """
+        if ax is None:
+            ax = gca()
         s = self.s(s)
-        if self.closed:
-            s = s + [s[0]]
+#        if self.closed:
+#            s = s + [s[0]]
         print('plot', self.closed)
         ax.plot(self.x(s), self.y(s))
     

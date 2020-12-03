@@ -38,10 +38,6 @@ class Bezier3(Curve):
         Connects the Bezier-curve to p1 of curve 1 and p2 of curve 2 so that
 		 the derivative become continous.
         """
-#        self.points[0] = self.p0 = Point(c1.x(s1), c1.y(s1))
-#        self.points[1] = self.p1 = Point(c1.dx(s1)/3+c1.x(s1), c1.dy(s1)/3+c1.y(s1))
-#        self.points[2] = self.p2 = Point(c2.dx(s2)/3+c2.x(s2), c2.dy(s2)/3+c2.y(s2))
-#        self.points[3] = self.p3 = Point(c2.x(s2), c2.y(s2))
         self.connect_start(c1, s=s1, m=m1)
         self.connect_end(c2, s=s2, m=m2)
 
