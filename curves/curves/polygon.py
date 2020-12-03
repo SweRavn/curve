@@ -56,14 +56,13 @@ class Polygon(Curve):
         """
         Create fillets on corners with index from N. Dafault all
         """
-        if N is None:
-            if self.closed:
-                N = arange(self.n-2)+1
-            else:
-                N = arange(self.n)
-        print('filliet', N)
         fillets = list()
-        for n in N:
-            fillets.append(fillet(self[n], self[n-1], self[n+1], r))
+        if N is None:
+            N = arange(self.n-2)+1
+            for n in N:
+                fillets.append(fillet(self[n], self[n-1], self[n+1], r))
+            if self.closed:
+                fillets.append(fillet(self[0], self[self.n-1], self[1], r))
+                fillets.append(fillet(self[self.n-1], self[self.n-2], self[0], r))
         return fillets
         
