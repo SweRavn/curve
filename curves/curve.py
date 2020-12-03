@@ -29,15 +29,18 @@ class Curve(metaclass=MetaCurve):
     Base class for holding a curve. A curve is a parametrized object that renders to a polygon. Curve holds the basic functioanlity to render the curve to an array of points that can be manipulated in other ways.
     """
     counter = 0
-    def __init__(self, *args, s1=0, s2=1, points=list(), n=100, name='Curve', closed=False, **kwargs):
+    def __init__(self, *args, s1=0, s2=1, points=list(), n=100, name='', closed=False, **kwargs):
+        if name != '':
+            _curves.append(self) # Do not add name-less curves
+            self.name = name
+        else:
+            self.name = f'C{Point.count}'
         self.s1 = s1 # First point in sweep
         self.s2 = s2 # Second point in sweep
-        self.name = name
         self._n = n
         self._a = linspace(self.s1, self.s2, self.n)
         self.points = points.copy()
         self.closed = closed
-        _curves.append(self)
         
     def __str__(self):
         return self.name

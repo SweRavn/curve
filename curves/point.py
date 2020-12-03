@@ -19,11 +19,10 @@ class Point:
     def __init__(self, x, y, name=''):
         if name != '':
             _points.append(self) # Do not add name-less points
-        self._p = (x, y)
-        if name == "":
-            self.name = f"P{Point.count}"
-        else:
             self.name = name
+        else:
+            self.name = f'P{Point.count}'
+        self._p = (x, y)
         Point.count += 1
     
     def __str__(self):
