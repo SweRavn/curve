@@ -8,9 +8,9 @@ setup(
     author='Robert Rehammar',
     author_email='robert@rehammar.se',
     packages=find_packages(exclude=['tests*']),
-    install_requires=['numpy', 'scipy'],
-    version='0.1',
+    install_requires=['numpy', 'scipy', 'matplotlib', 'pyqt5'],
+    version='0.2',
     license='MIT',
-    description='A package to generate parametric curves in 2',
+    description='A package to generate parametric curves in 2d',
     long_description=open('README.md').read(),
 )
