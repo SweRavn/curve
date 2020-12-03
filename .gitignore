@@ -4,3 +4,5 @@ curves/__pycache__/*
 curves/curves/__pycache__/*
 Curves.egg-info/*
 *.csv
+antennas/*
+tmp/*

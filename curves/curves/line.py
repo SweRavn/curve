@@ -24,6 +24,12 @@ class Line(Curve):
         self.p2 = p2
         super().__init__(*args, n = n, points=[self.p1, self.p2], name=name, **kwargs)
     
+    def __str__(self):
+        return self.name+' from '+str(self.p1)+' to '+str(self.p2)
+    
+    def __repr__(self):
+        return self.name+' from '+str(self.p1)+' to '+str(self.p2)
+    
     def _y(self, s):
         return self.p1.y + (self.p2.y-self.p1.y)*s
 

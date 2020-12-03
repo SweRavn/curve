@@ -5,7 +5,7 @@ Created on Tue Nov 26 15:23:57 2019
 @author: rore
 """
 
-from numpy import sqrt
+from numpy import sqrt, cos, sin, arctan, pi, arctan2
 
 def plot_points(ax):
     for p in _points:
@@ -15,11 +15,22 @@ def plot_points(ax):
 _points = list()
 
 class Point:
+    count = 0
     def __init__(self, x, y, name=""):
         self._p = (x, y)
-        self.name = name
+        if name == "":
+            self.name = f"P{Point.count}"
+        else:
+            self.name = name
+        Point.count += 1
         _points.append(self) #FIXME: add that the point should be removed at some point since this will be a memory leake if not.
     
+    def __str__(self):
+        return self.name+f'({self.x}, {self.y})'
+
+    def __repr__(self):
+        return self.name+f'({self.x}, {self.y})'
+
     @property
     def x(self):
         return self._p[0]
@@ -32,9 +43,40 @@ class Point:
     def mag(self):
         return sqrt(self.x**2+self.y**2)
     
+    def __abs__(self):
+        return self.mag
+    
     @property
     def p(self):
         return self._p
+    
+    @property
+    def n(self):
+        """
+        Self normalized
+        """
+        return self/self.mag
+    
+    @property
+    def theta(self):
+        """
+        @return Angle of point in cartesian coordinate system.
+        """
+        print("Warning: property theta is deprecated. Use arg instead.")
+        if self.x != 0:
+            return arctan(self.y/self.x)
+        else:
+            return pi/2
+        
+    @property
+    def arg(self):
+        return arctan2(self.y, self.x)
+    
+    def rotate(self, theta):
+        """
+        @return self rotated and angle @param theta radians
+        """
+        return Point(cos(theta)*self.x-sin(theta)*self.y, sin(theta)*self.x+cos(theta)*self.y)
     
     def dot(self, other):
         """
@@ -48,11 +90,12 @@ class Point:
         @param l: vector in the direction of the line
         @param u: point on the line
         """
+        l = l.n
         if u is None:
-            return 2*self.dot(l)*l/l.mag - self
-        else:            
-            lp = l-u
-            return 2*(self-u).dot(lp)*lp/lp.mag - self
+            u = Point(0,0)
+        b = u - (u.dot(l))*l
+        p = self-b
+        return 2*p.dot(l)*l - p+b
 
     def reflect(self, l, u=None):
         """
@@ -60,12 +103,6 @@ class Point:
         """
         p = self.reflection(l, u)
         self._p = (p.x, p.y)
-    
-    def __str__(self):
-        if len(self.name) > 0:
-            return "{}: ({},{})".format(self.name, self.x, self.y)
-        else:
-            return "({},{})".format(self.x, self.y)
     
     def __add__(self, other):
         x = self.x + other.x
@@ -76,6 +113,9 @@ class Point:
         x = self.x - other.x
         y = self.y - other.y
         return Point(x,y)
+    
+    def __div__(self, n):
+        return Point(self.x/n, self.y/n)
         
     def __lt__(self, other):
         self_mag = (self.x ** 2) + (self.y ** 2)
@@ -86,11 +126,18 @@ class Point:
         self_mag = (self.x ** 2) + (self.y ** 2)
         other_mag = (other.x ** 2) + (other.y ** 2)
         return self_mag > other_mag
+
+    def __neg__(self):
+        return Point(-self.x, -self.y)
     
 #    def __le__:
 #    def __ge__:
-#    def __eq__:
-#    def __ne__:
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self, other):
+        return not self==other
+    
     def __mul__(self, scalar):
         return Point(self.x*scalar, self.y*scalar)
         

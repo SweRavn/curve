@@ -8,12 +8,38 @@ Created on Sat Nov 23 07:42:59 2019
 from numpy import arange, sqrt, array, pi, cos
 __inf = float('inf')
 
-def export(data, filename, filetype='csv', name='noname', **kwargs):
+class Export:
+    """
+    Class to do export to different file formats.
+    """
+    def __init__(self, **kwargs):
+        pass
+    
+    def to_csv(self, data):
+        pass
+    
+    def to_svg(self, data):
+        pass
+    
+    def to_kicad(self, data):
+        pass
+
+export_options_kicad = {
+        'layer': 'F.Cu', # B.Cu, F.SilkS, B.SilkS, F.Fab, B.Fab
+        'draw_type': 'fp_poly', # fp_line, np_thru_hole
+        }
+export_options_csv = {
+        'sep': ','}
+export_options_svg = {
+        }
+
+def export(data, filename='noname', path='./', filetype='csv', name='noname', options={}, **kwargs):
     """
     Export the contents of data to a number of different formats.
     @param data list or nympy.array. If it is a list is it expected to be a list of numpy.array's. Then export is run on each numpy.array in the list to the same file.
     """
-    filename = filename.split('.')[0]
+    filename = path.strip('/\\')+'/'+filename.split('.')[0]
+    
     if type(data) != list:
         d = [data]
     else:
@@ -87,6 +113,13 @@ def export(data, filename, filetype='csv', name='noname', **kwargs):
             file.write('  (fp_text value {name} (at 0 0) (layer F.Fab)\n'.format(name=name))
             file.write('    (effects (font (size 1 1) (thickness 0.15)))\n')
             file.write('  )\n') # fp_text
+            if 'texts' in options:
+                for text in options['texts']:
+                    if 'angle' in text:
+                        angle = text['angle']
+                    else:
+                        angle = 0
+                    file.write(f'(fp_text user "{text["text"]}" (at {text["point"].x} {text["point"].y} {angle}) (layer {text["layer"]}) (effects (font (size 1 1)(thickness 0.15) )))\n')
             for k in range(len(d)):
                 data = d[k]
                 layer = layers[k]
@@ -95,19 +128,40 @@ def export(data, filename, filetype='csv', name='noname', **kwargs):
                     file.write(f'  ({tp} (pts ')
                     I,J = data.shape
                     for j in range(J):
-                        file.write(f' (xy {data[0,j]:0.3g} {data[1,j]:0.3g})')
-                    file.write(f') (layer {layer}) (width 0.05))\n')
+                        file.write(f' (xy {data[0,j]:0.4g} {data[1,j]:0.4g})')
+                    file.write(f') (layer {layer}) (width 0.001))\n')
                 elif tp=='fp_line':
                     I,J = data.shape
                     for j in range(J-1):
-                        file.write(f'  ({tp} (start {data[0,j]:0.3g} {data[1,j]:0.3g}) (end {data[0,j+1]:0.3g} {data[1,j+1]:0.3g}) (layer {layer}) (width 0.05))\n')
+                        file.write(f'  ({tp} (start {data[0,j]:0.4g} {data[1,j]:0.4g}) (end {data[0,j+1]:0.4g} {data[1,j+1]:0.4g}) (layer {layer}) (width 0.001))\n')
+                elif tp == 'np_thru_hole':
+                    for j in range(J-1):
+                        file.write(f'  (pad "" {tp} oval (at {(data[0,j]+data[0,j+1])/2:0.3g} {(data[1,j]+data[1,j+1])/2:0.3g}) (size {(data[0,j]+data[0,j+1])/2:0.3g} {(data[1,j+1]-data[1,j+1]):0.3g})')
+                elif 'pad' in tp:
+                    x = (max(data[0,:])+min(data[0,:]))/2
+                    y = (max(data[1,:])+min(data[1,:]))/2
+                    w = (max(data[0,:])-min(data[0,:]))
+                    h = (max(data[1,:])-min(data[1,:]))
+                    s = min(w, h)
+                    file.write(f'({tp} smd custom (at {x:0.4g} {y:0.4g}) (size {s:0.4g} {s:0.4g}) (layers {layer})\n')
+                    file.write('  (options (clearance outline) (anchor circle))\n')
+                    file.write('  (primitives\n')
+                    file.write('    (gr_poly (pts\n')
+                    I,J = data.shape
+                    for j in range(J):
+                        file.write(f' (xy {data[0,j]-x:0.4g} {data[1,j]-y:0.4g})')
+                    file.write(') (width 0.001)) ))\n')
                 else:
                     raise Exception(f'Unknown object type {tp}')
+                file.write('\n')
             file.write(')\n') # module
     else:
         raise Exception(f'Unknown file type {filetype}')
 
 def dist(p1, p2):
+    """
+    Distance between two points.
+    """
     return sqrt((p1[0]-p2[0])**2+(p1[1]-p2[1])**2)
 
 def cleanup(data, mind=__inf, mina=pi):

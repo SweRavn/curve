@@ -24,20 +24,25 @@ class MetaCurve(type):
         return instance
         
 class Curve(metaclass=MetaCurve):
-    def __init__(self, *args, s1=0, s2=1, points=list(), **kwargs):
+    """
+    Base class for holding a curve. A curve is a parametrized object that renders to a polygon. Curve holds the basic functioanlity to render the curve to an array of points that can be manipulated in other ways.
+    """
+    counter = 0
+    def __init__(self, *args, s1=0, s2=1, points=list(), n=100, name='Curve', closed=False, **kwargs):
         self.s1 = s1 # First point in sweep
         self.s2 = s2 # Second point in sweep
-        try:
-            self.name = kwargs['name']
-        except:
-            self.name = '' # Default name is ''.
-        try:
-            self._n = kwargs['n']
-        except:
-            self._n = 100 # Default number of sampling points is 100.
+        self.name = name
+        self._n = n
         self._a = linspace(self.s1, self.s2, self.n)
-        self.points = points
+        self.points = points.copy()
+        self.closed = closed
         _curves.append(self)
+        
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return self.name
     
     def finish(self, *args, **kwargs):
         """
@@ -64,6 +69,7 @@ class Curve(metaclass=MetaCurve):
             C = Point((p2.x-p1.x)/2, (p2.y-p1.y)/2) # Default rotation center is geometrical center of endpoints of curve.
         self.rotate(phi, C)
         self.translate(t)
+        Curve.counter += 1 # Use this to name unnamed curves.
         
     def translate(self, t):
         self.t = t
@@ -81,13 +87,16 @@ class Curve(metaclass=MetaCurve):
         Reflect self in a line defiend by direction l and going through point u.
         """
         if len(self.points) == 0:
-            raise Exception('Rotation support is not implemented for '+self.__class__.__name__)
+            raise Exception('Reflection support is not implemented for '+self.__class__.__name__)
         else:
             for point in self.points:
                 point.reflect(l, u)
     
-    @property # Number of points in array
+    @property
     def n(self):
+        """
+        Number of points in array.
+        """
         return self._n
     
     def s(self, s=None):
@@ -95,7 +104,10 @@ class Curve(metaclass=MetaCurve):
         @param s: Either an array-like object of paramer values, None to let the curve generate the parameters from default or a slice to slice the default list.
         """
         if s is None:
-            return self._a
+            if self.closed:
+                return concatenate((self._a, array([self._a[0]])))
+            else:
+                return self._a
         elif type(s) is slice:
             return self._a[s]
         else:
@@ -279,6 +291,9 @@ class Curve(metaclass=MetaCurve):
         Plot self on ax.
         """
         s = self.s(s)
+        if self.closed:
+            s = s + [s[0]]
+        print('plot', self.closed)
         ax.plot(self.x(s), self.y(s))
     
     def plot_support(self, ax):
@@ -318,3 +333,8 @@ class MultiCurve:
     
     def append(self, curve):
         self.curves.append(curve)
+    
+    def reflect(self, l, u=None):
+        for curve in self.curves:
+            print(curve)
+            curve.reflect(l, u)
