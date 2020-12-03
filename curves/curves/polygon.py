@@ -21,7 +21,8 @@ class Polygon(Curve):
     def _x(self, s):
         try:
             s = [int(i) for i in s]
-            x = array([p.x for p in self.points[s]])
+            x = array([self.points[i].x for i in s])
+#            x = array([p.x for p in self.points[s]])
             return x
         except:
             return self.points[int(s)].x
@@ -29,7 +30,8 @@ class Polygon(Curve):
     def _y(self, s):
         try:
             s = [int(i) for i in s]
-            y = array([p.y for p in self.points[s]])
+            y = array([self.points[i].y for i in s])
+#            y = array([p.y for p in self.points[s]])
             return y
         except:
             return self.points[int(s)].y            
