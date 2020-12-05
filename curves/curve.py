@@ -11,7 +11,9 @@ from numpy import array, concatenate, linspace, sqrt, ndarray, sum
 from matplotlib.pyplot import gca
 from .point import Point
 
-def plot_curves(ax):
+def plot_curves(ax=None):
+    if ax is None:
+        ax = gca()
     for c in _curves:
         c.plot(ax)
         c.plot_name(ax)
@@ -27,6 +29,8 @@ class MetaCurve(type):
 class Curve(metaclass=MetaCurve):
     """
     Base class for holding a curve. A curve is a parametrized object that renders to a polygon. Curve holds the basic functioanlity to render the curve to an array of points that can be manipulated in other ways.
+    @param closed If True, the curve is rendered closed by joining the first and last point.
+    
     """
     counter = 0
     def __init__(self, *args, s1=0, s2=1, points=list(), n=100, name='', closed=False, **kwargs):
@@ -84,7 +88,11 @@ class Curve(metaclass=MetaCurve):
         """
         self._phi = phi
         self._C = C
-        # Fixme: implement rotation in the datapoints.
+        if len(self.points) == 0:
+            raise Exception('Rotation support is not implemented for '+self.__class__.__name__)
+        else:
+            for point in self.points:
+                point.rotate(phi, C)
     
     def reflect(self, l, u=None):
         """
@@ -297,9 +305,6 @@ class Curve(metaclass=MetaCurve):
         if ax is None:
             ax = gca()
         s = self.s(s)
-#        if self.closed:
-#            s = s + [s[0]]
-        print('plot', self.closed)
         ax.plot(self.x(s), self.y(s))
     
     def plot_support(self, ax):
