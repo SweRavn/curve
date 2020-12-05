@@ -72,12 +72,19 @@ class Point:
     def arg(self):
         return arctan2(self.y, self.x)
     
-    def rotate(self, theta):
+    def rotation(self, theta, point):
         """
-        @return self rotated and angle @param theta radians
+        @return self rotated and angle @param theta radians around @param point
         """
-        return Point(cos(theta)*self.x-sin(theta)*self.y, sin(theta)*self.x+cos(theta)*self.y)
+        return Point(cos(theta)*(self.x-point.x)-sin(theta)*(self.y-point.y), sin(theta)*(self.x-point.x)+cos(theta)*(self.y-point.y))+point
     
+    def rotate(self, theta, point):
+        """
+        Rotate self an angle @these around a point @point
+        """
+        p = self.rotation(theta, point)
+        self._p = (p.x, p.y)
+
     def dot(self, other):
         """
         The dot product of self with other.
