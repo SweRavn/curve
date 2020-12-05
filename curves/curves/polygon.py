@@ -7,13 +7,42 @@ Created on Sat Nov 23 07:39:02 2019
 
 from ..curve import MultiCurve, Curve
 from ..fillet import fillet
-from numpy import int, array, mod, arange
+from numpy import int, array, mod, arange, pi, cos, sin
 from ..point import Point
+
+def rectange_factory(w=1, h=1, ll=None, c=None, name='rectange'):
+    """
+    Build a rectange.
+    
+    @param w Width
+    @param h Heigh
+    @param ll Lower left corner
+    @param c Center
+    @param name Name of resulting Polygon
+    If neither ll or c are given, rectange is created with c=Point(0,0).
+    """
+    if c is not None:
+        ll = c - Point(w/2, h/2)
+    if ll is None:
+        ll = Point(0,0)
+    return Polygon([ll, ll+Point(w, 0), ll+Point(w, h), ll+Point(0, h)], name=name, closed=True)
+
+def closed_polygon_factory(n=3, r=1, alpha=0, name='closed polygon'):
+    """
+    Build an even closed Polygone.
+    
+    @param n Number of sides
+    @param r Radius of Polygone
+    @param alpha Initial angle
+    @param name Name of resulting Polygon
+    """
+    da = 2*pi/n
+    n = range(n)
+    return Polygon([Point(r*cos(da*i+alpha), r*sin(da*i+alpha)) for i in n], name=name, closed=True)
 
 class Polygon(Curve):
     """
     A polygon is parametrized by integers that run from 0 to number of points in the polygon.
-    @param closed If True, adds a final point equal to the first point if there is no such point to close the polygon.
     """
     def __init__(self, points, *args, name='Polygon', **kwargs):
         super().__init__(*args, name=name, points=points, s1=0, s2=len(points)-1, n=len(points), **kwargs)
@@ -22,7 +51,6 @@ class Polygon(Curve):
         try:
             s = [int(i) for i in s]
             x = array([self.points[i].x for i in s])
-#            x = array([p.x for p in self.points[s]])
             return x
         except:
             return self.points[int(s)].x
@@ -31,7 +59,6 @@ class Polygon(Curve):
         try:
             s = [int(i) for i in s]
             y = array([self.points[i].y for i in s])
-#            y = array([p.y for p in self.points[s]])
             return y
         except:
             return self.points[int(s)].y            
