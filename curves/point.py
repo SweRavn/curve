@@ -6,8 +6,11 @@ Created on Tue Nov 26 15:23:57 2019
 """
 
 from numpy import sqrt, cos, sin, arctan, pi, arctan2
+from matplotlib.pyplot import gca
 
-def plot_points(ax):
+def plot_points(ax=None):
+    if ax is None:
+        ax = gca()
     for p in _points:
         if p.name != "":
             p.plot(ax, text=p.name)
