@@ -7,10 +7,10 @@ Created on Sat Nov 23 07:39:02 2019
 
 from ..curve import MultiCurve, Curve
 from ..fillet import fillet
-from numpy import int, array, mod, arange, pi, cos, sin
+from numpy import int, array, mod, arange, pi, cos, sin, linspace
 from ..point import Point
 
-def rectange_factory(w=1, h=1, ll=None, c=None, name='rectange'):
+def rectange_Polygon_factory(w=1, h=1, ll=None, c=None, name='rectange', **kwargs):
     """
     Build a rectange.
     
@@ -25,9 +25,9 @@ def rectange_factory(w=1, h=1, ll=None, c=None, name='rectange'):
         ll = c - Point(w/2, h/2)
     if ll is None:
         ll = Point(0,0)
-    return Polygon([ll, ll+Point(w, 0), ll+Point(w, h), ll+Point(0, h)], name=name, closed=True)
+    return Polygon([ll, ll+Point(w, 0), ll+Point(w, h), ll+Point(0, h)], name=name, closed=True, **kwargs)
 
-def closed_polygon_factory(n=3, r=1, alpha=0, name='closed polygon'):
+def even_closed_Polygon_factory(n=3, r=1, alpha=0, name='closed polygon', **kwargs):
     """
     Build an even closed Polygone.
     
@@ -38,14 +38,41 @@ def closed_polygon_factory(n=3, r=1, alpha=0, name='closed polygon'):
     """
     da = 2*pi/n
     n = range(n)
-    return Polygon([Point(r*cos(da*i+alpha), r*sin(da*i+alpha)) for i in n], name=name, closed=True)
+    return Polygon([Point(r*cos(da*i+alpha), r*sin(da*i+alpha)) for i in n], name=name, closed=True, **kwargs)
+
+def from_Polygons_Polygon_factory(polygons, closed=True, **kwargs):
+    """
+    Creates a single polygons from a list of polygons. self.points are simply concatinated.
+    """
+    points = list()
+    for polygon in polygons:
+        points += polygon.points
+    return Polygon(points, closed=True, **kwargs)
+
+def from_Curves_Polygon_factory(curves, closed=True, **kwargs):
+    """
+    Create a single polygon from a list of curves.
+    """
+    points = list()
+    for curve in curves:
+        points += curve.render_points()
+    return Polygon(points, close=closed, **kwargs)
+
+def from_multiCurve_Polygon_factory():
+    raise Exception("Not implemented")    
 
 class Polygon(Curve):
     """
     A polygon is parametrized by integers that run from 0 to number of points in the polygon.
     """
     def __init__(self, points, *args, name='Polygon', **kwargs):
-        super().__init__(*args, name=name, points=points, s1=0, s2=len(points)-1, n=len(points), **kwargs)
+        super().__init__(*args,
+                         name=name,
+                         points=points,
+                         s1=0,
+                         s2=len(points)-1,
+                         n=len(points),
+                         **kwargs)
     
     def _x(self, s):
         try:
@@ -71,25 +98,40 @@ class Polygon(Curve):
         Fetches points in self
         @param s slice.
         """
-#        if i >= len(self.points):
-#        try:
-#            i = mod(i,len(self.points))
-#            s = [int(s) for s in i]
-#        except:
-#            s = int(i)
         return self.points[s]
 
-    def fillet(self, r=1, N=None):
+    def fillets(self,
+               r=1, # Fillet radius
+               N=None, # Indices to perform fillet on
+               ):
         """
-        Create fillets on corners with index from N. Dafault all
+        Create fillets on corners with index from N. Dafault all.
+        @return a list with all created fillets
         """
         fillets = list()
         if N is None:
-            N = arange(self.n-2)+1
-            for n in N:
-                fillets.append(fillet(self[n], self[n-1], self[n+1], r))
-            if self.closed:
-                fillets.append(fillet(self[0], self[self.n-1], self[1], r))
-                fillets.append(fillet(self[self.n-1], self[self.n-2], self[0], r))
+            ns = arange(self.n-2)+1
+        else:
+            ns = N
+        for n in ns:
+            fillets.append(fillet(self[n], self[n-1], self[n+1], r))
+        if self.closed and N is None:
+            fillets.append(fillet(self[self.n-1], self[self.n-2], self[0], r))
+            fillets.append(fillet(self[0], self[self.n-1], self[1], r))
         return fillets
-        
+    
+    def fillet(self,
+               n, # Index to perform fillet on
+               r=1, # Fillet radius
+               s=None):
+        if n == 0:
+            f = fillet(self[0], self[self.n-1], self[1], r)
+        elif n == len(self.points):
+            f = fillet(self[self.n-1], self[self.n-2], self[0], r)
+        else:
+            f = fillet(self[n], self[n-1], self[n+1], r)
+        points = f[0].render_points(s)
+        self.points = self.points[:n] + [f[1]] + points + [f[2]] + self.points[n+1:]
+        self._n = len(self.points)
+        self.s2 = self.n-1
+        self._a = linspace(self.s1, self.s2, self.n)
