@@ -8,12 +8,13 @@ Created on Tue Nov 26 15:23:57 2019
 from numpy import sqrt, cos, sin, arctan, pi, arctan2
 from matplotlib.pyplot import gca
 
-def plot_points(ax=None):
-    if ax is None:
-        ax = gca()
+def plot_vectors(ax=None):
+    plot_points(ax, vector=True)
+
+def plot_points(ax=None, vector=False):
     for p in _points:
         if p.name != "":
-            p.plot(ax, text=p.name)
+            p.plot(ax, text=p.name, vector=vector)
 
 _points = list()
 
@@ -158,14 +159,15 @@ class Point:
     
     def __getitem__(self, index):
         return self._p[index]
-#        if index == 0:
-#            return self.x
-#        elif index == 1:
-#            return self.y
-#        else:
-#            raise Exception('2D points only have 2 items, x, y, index is {}'.format(index))
-    def plot(self, ax, text=None):
-        ax.plot([self.x], [self.y], linewidth=0, marker='.', color='black')
+
+    def plot(self, ax=None, text=None, vector=False):
+        if ax is None:
+            ax = gca()
+        if vector is False:
+            ax.plot([self.x], [self.y], linewidth=0, marker='.', color='black')
+        else:
+            ax.plot([vector.x, vector.x+self.x], [vector.y, vector.y+self.y], linewidth=1, color='black')
+            ax.plot([vector.x+self.x], [vector.y+self.y], linewidth=1, marker='.', color='black')
         if text is not None:
             ax.text(self.x, self.y, ' '+text)
     
