@@ -326,7 +326,7 @@ class Curve(metaclass=MetaCurve):
         data = self.stroke(s, w)
         ax.plot(data[0,:], data[1,:])
 
-    def plot(self, ax=None, s=None, linecolor=None, linestyle=None):
+    def plot(self, ax=None, s=None, linecolor=None, linestyle=None, marker=None):
         """
         Plot self on ax.
         """
@@ -335,7 +335,8 @@ class Curve(metaclass=MetaCurve):
         s = self.s(s)
         ax.plot(self.x(s), self.y(s),
                 color=self.linecolor or linecolor,
-                linestyle=self.linestyle or linestyle)
+                linestyle=self.linestyle or linestyle,
+                marker=marker)
     
     def plot_support(self, ax):
         """
