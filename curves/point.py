@@ -160,14 +160,22 @@ class Point:
     def __getitem__(self, index):
         return self._p[index]
 
-    def plot(self, ax=None, text=None, vector=False):
+    def plot(self,
+             ax=None,
+             text=None,
+             vector=False,
+             linecolor=None,
+             marker='.',
+             markercolor=None,
+             ):
         if ax is None:
             ax = gca()
         if vector is False:
-            ax.plot([self.x], [self.y], linewidth=0, marker='.', color='black')
+            vector=Point(0,0)
+            ax.plot([self.x], [self.y], linewidth=0, marker=marker, color=markercolor)
         else:
-            ax.plot([vector.x, vector.x+self.x], [vector.y, vector.y+self.y], linewidth=1, color='black')
-            ax.plot([vector.x+self.x], [vector.y+self.y], linewidth=1, marker='.', color='black')
+            ax.plot([vector.x, vector.x+self.x], [vector.y, vector.y+self.y], linewidth=1, color=linecolor)
+            ax.plot([vector.x+self.x], [vector.y+self.y], linewidth=1, marker=marker, color=markercolor)
         if text is not None:
-            ax.text(self.x, self.y, ' '+text)
+            ax.text(vector.x+self.x, vector.y+self.y, ' '+text)
     

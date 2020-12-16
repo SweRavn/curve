@@ -6,6 +6,7 @@ Created on Sat Nov 23 07:40:38 2019
 """
 
 from numpy import cos, sin, pi
+from .. import CurvesSettings
 from ..curve import Curve
 import traceback
 
@@ -43,7 +44,7 @@ class Ellipse(Curve):
     def rotate(self,
                phi = 0,
                C = None):
-        if C is not None:
+        if C is not None and CurvesSettings['verbosity']>0:
             traceback.print_stack()
             print("Warning: Rotating around a point different from the ellipse center is not implemented.")
             print("Rotatin center set to", C)

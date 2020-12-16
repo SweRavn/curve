@@ -11,12 +11,13 @@ from numpy import array, concatenate, linspace, sqrt, ndarray, sum
 from matplotlib.pyplot import gca
 from .point import Point
 
-def plot_curves(ax=None):
+def plot_curves(ax=None,
+                xy=None):
     if ax is None:
         ax = gca()
     for c in _curves:
         c.plot(ax)
-        c.plot_name(ax)
+        c.plot_name(ax, xy)
 
 _curves = list()
 
@@ -33,7 +34,15 @@ class Curve(metaclass=MetaCurve):
     
     """
     counter = 0
-    def __init__(self, *args, s1=0, s2=1, points=list(), n=100, name='', closed=False, **kwargs):
+    def __init__(self, *args,
+                 s1=0, s2=1,
+                 points=list(),
+                 n=100,
+                 name='',
+                 closed=False,
+                 linecolor=None, # Color of curve when plotted
+                 linestyle=None, # Lie style of curve when plotted
+                 **kwargs):
         if name != '':
             _curves.append(self) # Do not add name-less curves
             self.name = name
@@ -45,6 +54,8 @@ class Curve(metaclass=MetaCurve):
         self._a = linspace(self.s1, self.s2, self.n)
         self.points = points.copy()
         self.closed = closed
+        self.linecolor=linecolor
+        self.linestyle=linestyle
         
     def __str__(self):
         return self.name
@@ -78,14 +89,25 @@ class Curve(metaclass=MetaCurve):
         self.rotate(phi, C)
         self.translate(t)
         Curve.counter += 1 # Use this to name unnamed curves.
-        
+    
+    @property
+    def center(self):
+        """
+        Center of curve, computed from all points.
+        """
+        return Point(sum(self.x()), sum(self.y()))/self.n
+    
     def translate(self, t):
         self.t = t
         
-    def rotate(self, phi, C):
+    def rotate(self,
+               phi = 0,
+               C = None):
         """
         Rotate the curve an angle phi around the point C.
         """
+        if C is None:
+            C = self.center
         self._phi = phi
         self._C = C
         if len(self.points) == 0:
@@ -138,6 +160,12 @@ class Curve(metaclass=MetaCurve):
         s = self.s(s)
         return array((self.x(s), self.y(s)))
 
+    def render_points(self, s=None):
+        """
+        @return A list of Points which corresponds to the rendered curve. This can for example be used to create a Polygon with.
+        """
+        return [Point(p[0], p[1]) for p in self.data(s).T]
+        
     def append_to(self, a, s=None):
         if s is None:
             ae = a[:,-1]
@@ -298,14 +326,16 @@ class Curve(metaclass=MetaCurve):
         data = self.stroke(s, w)
         ax.plot(data[0,:], data[1,:])
 
-    def plot(self, ax=None, s=None):
+    def plot(self, ax=None, s=None, linecolor=None, linestyle=None):
         """
         Plot self on ax.
         """
         if ax is None:
             ax = gca()
         s = self.s(s)
-        ax.plot(self.x(s), self.y(s))
+        ax.plot(self.x(s), self.y(s),
+                color=self.linecolor or linecolor,
+                linestyle=self.linestyle or linestyle)
     
     def plot_support(self, ax):
         """
@@ -313,8 +343,14 @@ class Curve(metaclass=MetaCurve):
         """
         self._plot_support(ax)
     
-    def plot_name(self, ax, s=0.5):
-        ax.text(self.x(s), self.y(s), self.name)
+    def plot_name(self, ax=None, s=0.5, xy=None):
+        if ax is None:
+            ax = gca()
+        if xy is not None:
+            x, y = xy
+        else:
+            x, y = self.x(s), self.y(s)
+        ax.text(x, y, self.name)
     
     def _plot_support(self, ax):
         raise Exception("Not implemented!")
@@ -347,5 +383,4 @@ class MultiCurve:
     
     def reflect(self, l, u=None):
         for curve in self.curves:
-            print(curve)
             curve.reflect(l, u)
