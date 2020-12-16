@@ -12,3 +12,6 @@ CurvesSettings = {
     'closed': True, # Controls if Curves default to closed or not.
     'verbosity': 0, # 0 - 2 on how verbose Curves should be.
     }
+
+class CurvesException(Exception):
+    pass
