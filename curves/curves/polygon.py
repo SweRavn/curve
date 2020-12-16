@@ -56,7 +56,7 @@ def from_Curves_Polygon_factory(curves, closed=True, **kwargs):
     points = list()
     for curve in curves:
         points += curve.render_points()
-    return Polygon(points, close=closed, **kwargs)
+    return Polygon(points, closed=closed, **kwargs)
 
 def from_multiCurve_Polygon_factory():
     raise Exception("Not implemented")    
