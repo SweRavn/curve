@@ -7,7 +7,8 @@ Created on Sat Oct 31 06:14:23 2020
 
 from numpy import arccos, sin, pi, sqrt
 from .curves.ellipse import Ellipse
-from . import CurvesSettings
+#from .curves.polygon import Polygon
+from . import CurvesSettings, CurvesException
 import traceback
 
 def fillet(p, # Fillet point
@@ -25,13 +26,15 @@ def fillet(p, # Fillet point
     
     t1 = p1.n # Direction of first point
     t2 = p2.n # Direction of seconed point
-    c = (t1 + t2).n # Directoin in the middle of them
+    c = (t1 + t2) # Directoin in the middle of them, not normalized
+    if c.mag == 0:
+        # Trying to fillet along a straight line, raise an exception
+        raise CurvesException(f"Cannot create fillet in point {p}, it is on a straight line.")
     
     theta = arccos(t1.dot(t2)) # Angle at point
-#    alpha = pi/2 - theta/2 # Complementary angle to theta
     z = r/sin(theta/2) # Distance to center of fillet ellipse
     a = sqrt(z**2 - r**2) # Distance to fillet start
-    c = z*c # Fillet center
+    c = z*c.n # Fillet center
     a1 = a*t1 # Fillet touching point towards p1
     a2 = a*t2 # Fillet touching point towards p2
     if (a1.mag > p1.mag or a2.mag > p2.mag) and CurvesSettings['verbosity']>0:

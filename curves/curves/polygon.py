@@ -9,6 +9,7 @@ from ..curve import MultiCurve, Curve
 from ..fillet import fillet
 from numpy import int, array, mod, arange, pi, cos, sin, linspace
 from ..point import Point
+from .. import CurvesException
 
 def rectange_Polygon_factory(w=1, h=1, ll=None, c=None, name='rectange', **kwargs):
     """
@@ -114,10 +115,19 @@ class Polygon(Curve):
         else:
             ns = N
         for n in ns:
-            fillets.append(fillet(self[n], self[n-1], self[n+1], r))
+            try:
+                fillets.append(fillet(self[n], self[n-1], self[n+1], r))
+            except CurvesException:
+                pass
         if self.closed and N is None:
-            fillets.append(fillet(self[self.n-1], self[self.n-2], self[0], r))
-            fillets.append(fillet(self[0], self[self.n-1], self[1], r))
+            try:
+                fillets.append(fillet(self[self.n-1], self[self.n-2], self[0], r))
+            except CurvesException:
+                pass
+            try:
+                fillets.append(fillet(self[0], self[self.n-1], self[1], r))
+            except CurvesException:
+                pass
         return fillets
     
     def fillet(self,
