@@ -52,3 +52,11 @@ def fillet(p, # Fillet point
             s2 -= 2*pi
 
     return (Ellipse(r=r, s1=s1, s2=s2, t=c+p, n=n), a1+p, a2+p)
+
+def chamfer(p, # Chamfer point
+            p1, # First point of V
+            p2, # Second point of V
+            a1=1, # Distance to chamber point towards p1
+            a2=1, # Distance to chamber point towards p2
+            ):
+    return [a1*(p1-p).n+p, a2*(p2-p).n+p, ]

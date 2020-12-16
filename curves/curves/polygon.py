@@ -6,7 +6,7 @@ Created on Sat Nov 23 07:39:02 2019
 """
 
 from ..curve import MultiCurve, Curve
-from ..fillet import fillet
+from ..fillet import fillet, chamfer
 from numpy import int, array, mod, arange, pi, cos, sin, linspace
 from ..point import Point
 from .. import CurvesException
@@ -145,3 +145,19 @@ class Polygon(Curve):
         self._n = len(self.points)
         self.s2 = self.n-1
         self._a = linspace(self.s1, self.s2, self.n)
+    
+    def chamfers(self,
+                 a, # Chamfer distance, only symmetrical suported
+                 N=None,
+                 ):
+        chamfers = list()
+        if N is None:
+            ns = arange(self.n-2)+1
+        else:
+            ns = N
+        for n in ns:
+            chamfers += chamfer(self[n], self[n-1], self[n+1], a1=a, a2=a)
+        if self.closed and N is None:
+            chamfers += chamfer(self[self.n-1], self[self.n-2], self[0], a1=a, a2=a)
+            chamfers += chamfer(self[0], self[self.n-1], self[1], a1=a, a2=a)
+        return chamfers
